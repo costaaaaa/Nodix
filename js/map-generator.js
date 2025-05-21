@@ -179,8 +179,8 @@ $(document).ready(function() {
                         treeSpacing: 200,
                         blockShifting: true,
                         edgeMinimization: true,
-                        parentCentralization: true,
-                        alignment: direction.includes('CENTER') ? 'center' : 'undefined'
+                        parentCentralization: true
+                        // L'opzione 'alignment' non è supportata nella versione attuale di vis.js
                     }
                 }
             };
@@ -284,12 +284,13 @@ $(document).ready(function() {
                     blockShifting: true,
                     edgeMinimization: true,
                     parentCentralization: true,
-                    alignment: direction.includes('CENTER') ? 'center' : 'undefined'
+                    //alignment: direction.includes('CENTER') ? 'center' : null
+                    parentCentralization: true
                 }
             },
             physics: false,
             interaction: {
-                zoomView: true,
+                zoomView: false, // Disabilita lo zoom con la rotella del mouse
                 dragView: true
             }
         };
@@ -313,8 +314,8 @@ $(document).ready(function() {
                     treeSpacing: 200,
                     blockShifting: true,
                     edgeMinimization: true,
-                    parentCentralization: true,
-                    alignment: 'center'
+                    parentCentralization: true
+                    // L'opzione 'alignment' non è supportata nella versione attuale di vis.js
                 };
 
                 // Aggiungi una funzione di callback per posizionare i nodi
@@ -344,4 +345,4 @@ $(document).ready(function() {
         }
         network = new vis.Network(container, data, options);
     });
-}); 
+});

@@ -101,4 +101,130 @@ body {
     padding: 10px;
     background: white;
     border-bottom: 1px solid #eee;
-} 
+}
+
+/* Media queries per rendere il sito responsive */
+@media (max-width: 992px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .concept-map .d-flex {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .concept-map .d-flex .btn,
+    .concept-map .d-flex .form-select {
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 768px) {
+    .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    
+    .text-editor, .concept-map {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    #textInput {
+        height: 200px;
+    }
+    
+    #mapContainer {
+        height: 400px;
+    }
+    
+    .fullscreen-map {
+        padding: 10px;
+    }
+    
+    .fullscreen-map .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .fullscreen-map .controls .btn,
+    .fullscreen-map .controls .form-select {
+        flex: 1 1 auto;
+        min-width: 80px;
+    }
+    
+    /* Miglioramenti per layout responsive */
+    .offset-md-2, .offset-md-3 {
+        margin-left: 0;
+    }
+    
+    .col-md-8, .col-md-6 {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .text-editor, .concept-map {
+        padding: 10px;
+    }
+    
+    #textInput {
+        height: 180px;
+    }
+    
+    #mapContainer {
+        height: 350px;
+    }
+    
+    .dropdown-menu {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .fullscreen-map .controls {
+        flex-direction: column;
+    }
+    
+    .fullscreen-map .controls .btn,
+    .fullscreen-map .controls .form-select {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+    
+    /* Stili responsive per dashboard e editor */
+    .col-md-3, .col-md-9, .col-md-6, .col-md-8 {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
+    .card {
+        margin-bottom: 15px;
+    }
+    
+    .list-group-item {
+        padding: 8px 12px;
+    }
+    
+    .input-group {
+        margin-bottom: 10px;
+    }
+    
+    .table td, .table th {
+        padding: 8px;
+    }
+    
+    .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .btn-group .btn {
+        flex: 1;
+        padding: 6px 8px;
+        font-size: 0.9rem;
+    }
+}

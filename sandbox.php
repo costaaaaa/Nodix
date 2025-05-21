@@ -3,6 +3,7 @@ session_start();
 ?>
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@ session_start();
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
+
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
@@ -48,7 +50,7 @@ session_start();
                     <button id="generateMap" class="btn btn-primary mt-3">Genera Mappa</button>
                 </div>
             </div>
-            
+
         </div>
         <div class="row">
             <div class="col">
@@ -65,6 +67,9 @@ session_start();
                         </select>
                         <button class="btn btn-sm btn-outline-secondary me-2" id="zoomIn">+</button>
                         <button class="btn btn-sm btn-outline-secondary me-2" id="zoomOut">-</button>
+
+                        <br />
+
                         <button class="btn btn-sm btn-outline-primary me-2" id="fullscreenBtn">
                             <i class="bi bi-arrows-fullscreen"></i> Schermo intero
                         </button>
@@ -84,22 +89,12 @@ session_start();
         </div>
     </div>
 
-    <br/><br/>
+    <br /><br />
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/map-generator.js"></script>
-    <script>
-        // Previeni il comportamento del tab
-        document.getElementById('textInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                const start = this.selectionStart;
-                const end = this.selectionEnd;
-                this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
-                this.selectionStart = this.selectionEnd = start + 4;
-            }
-        });
-    </script>
+    <script src="js/text-editor.js"></script>
 </body>
-</html> 
+
+</html>

@@ -14,7 +14,7 @@ if (isset($_GET['id'])) {
     $stmt = $conn->prepare("SELECT * FROM texts WHERE id = ? AND user_id = ?");
     $stmt->execute([$_GET['id'], $_SESSION['user_id']]);
     $text = $stmt->fetch();
-    
+
     if (!$text) {
         header("Location: dashboard.php");
         exit();
@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title']);
     $content = $_POST['content'];
     $folder_id = $_POST['folder_id'] ?? null;
-    
+
     if (!empty($title) && !empty($content)) {
         if (isset($_GET['id'])) {
             // Aggiorna il testo esistente
@@ -49,6 +49,7 @@ $folders = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,6 +62,7 @@ $folders = $stmt->fetchAll();
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
+
 <body class="bg-light">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
@@ -154,17 +156,7 @@ $folders = $stmt->fetchAll();
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/map-generator.js"></script>
-    <script>
-        // Gestione del tab nell'editor
-        document.getElementById('content').addEventListener('keydown', function(e) {
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                const start = this.selectionStart;
-                const end = this.selectionEnd;
-                this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
-                this.selectionStart = this.selectionEnd = start + 4;
-            }
-        });
-    </script>
+    <script src="js/text-editor.js"></script>
 </body>
-</html> 
+
+</html>
