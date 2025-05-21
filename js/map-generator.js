@@ -195,13 +195,45 @@ $(document).ready(function() {
     setupExportPDF();
     $('#directionSelect').change(updateDirection);
 
+    // Aggiungiamo un campo per il titolo della mappa
+    if (!$('#mapTitleInput').length) {
+        // Verifica quale textarea è presente nella pagina (textInput per sandbox.php o content per editor.php)
+        const textareaSelector = $('#textInput').length ? '#textInput' : '#content';
+        $('<div class="form-group mb-3"><label for="mapTitleInput">Titolo della mappa:</label><input type="text" class="form-control" id="mapTitleInput" placeholder="Inserisci il titolo della mappa"></div>').insertBefore(textareaSelector);
+    }
+
     $('#generateMap').click(function() {
-        const text = $('#textInput').val();
+        const title = $('#mapTitleInput').val() || 'Mappa Concettuale';
+        // Ottieni il testo dal textarea corretto (textInput per sandbox.php o content per editor.php)
+        const text = $('#textInput').length ? $('#textInput').val() : $('#content').val();
         const nodes = [];
         const edges = [];
         let nodeId = 1;
         let parentStack = [null];
         let levelNodes = {};
+        
+        // Crea il nodo titolo come nodo principale
+        nodes.push({
+            id: nodeId,
+            label: title,
+            level: 1,
+            color: {
+                background: '#3498db',
+                border: '#2980b9',
+                highlight: {
+                    background: '#2980b9',
+                    border: '#2c3e50'
+                }
+            },
+            font: {
+                size: 18,
+                bold: true
+            }
+        });
+        
+        // Aggiorna lo stack dei genitori con il nodo titolo
+        parentStack[0] = nodeId;
+        nodeId++;
 
         // Dividi il testo in righe
         const lines = text.split('\n');
@@ -210,10 +242,11 @@ $(document).ready(function() {
             if (line.trim() === '') return;
 
             // Conta gli spazi all'inizio della riga per determinare il livello
-            const level = (line.match(/^\s*/)[0].length / 4) + 1;
+            // Incrementiamo di 1 il livello perché il livello 1 è riservato al titolo
+            const level = (line.match(/^\s*/)[0].length / 4) + 2;
             const content = line.trim().replace(/^[•\-\*]\s*/, '');
 
-            // Rimuovi i nodi genitori non più necessari
+            // Rimuovi i nodi genitori non più necessari, ma mantieni almeno il nodo titolo
             while (parentStack.length > level) {
                 parentStack.pop();
             }
@@ -233,21 +266,29 @@ $(document).ready(function() {
                 }
             });
 
-            // Crea l'arco se c'è un genitore
-            if (parentStack[parentStack.length - 1] !== null) {
-                edges.push({
-                    from: parentStack[parentStack.length - 1],
-                    to: nodeId,
-                    arrows: 'to',
-                    color: {
-                        color: '#7f8c8d',
-                        highlight: '#2c3e50'
-                    }
-                });
-            }
+            // Crea l'arco collegandolo al genitore appropriato
+            // Se il livello è 2 (zero indentazione), collega al nodo titolo (ID 1)
+            // Altrimenti, collega al genitore appropriato dallo stack
+            const parentId = (level === 2) ? 1 : parentStack[parentStack.length - 1];
+            edges.push({
+                from: parentId,
+                to: nodeId,
+                arrows: 'to',
+                color: {
+                    color: '#7f8c8d',
+                    highlight: '#2c3e50'
+                }
+            });
+
 
             // Aggiorna lo stack dei genitori
-            parentStack.push(nodeId);
+            // Se il livello è 2, il genitore per i nodi successivi indentati sarà il nodo corrente
+            // Altrimenti, aggiorna lo stack normalmente
+            if (level === 2) {
+                 parentStack[2] = nodeId; // Imposta il nodo corrente come genitore per il livello 3
+            } else {
+                parentStack.push(nodeId);
+            }
             nodeId++;
         });
 
@@ -288,8 +329,19 @@ $(document).ready(function() {
                     parentCentralization: true
                 }
             },
-            physics: false,
+            physics: {
+                enabled: true,
+                hierarchicalRepulsion: {
+                    centralGravity: 0.0,
+                    springLength: 100,
+                    springConstant: 0.01,
+                    nodeDistance: 120,
+                    damping: 0.09
+                },
+                solver: 'hierarchicalRepulsion'
+            },
             interaction: {
+                dragNodes: true, // Abilita il trascinamento dei nodi
                 zoomView: false, // Disabilita lo zoom con la rotella del mouse
                 dragView: true
             }
