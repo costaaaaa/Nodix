@@ -26,61 +26,58 @@ $(document).ready(function() {
 
     // Funzione per gestire la modalità a schermo intero
     function setupFullscreen() {
-        $('#fullscreenBtn').click(function() {
-            const conceptMap = $('.concept-map');
-            
-            if (!isFullscreen) {
-                // Salva la posizione originale
-                conceptMap.data('original-parent', conceptMap.parent());
-                conceptMap.data('original-index', conceptMap.index());
-                
-                // Crea un contenitore a schermo intero
-                const fullscreenContainer = $('<div class="fullscreen-map"></div>');
-                conceptMap.appendTo(fullscreenContainer);
-                fullscreenContainer.appendTo('body');
-                
-                // Aggiorna il layout della rete
-                if (network) {
-                    setTimeout(() => {
-                        network.fit();
-                        network.redraw();
-                    }, 100);
+        const fullscreenBtn = $('#fullscreenBtn');
+        const conceptMap = $('.concept-map')[0]; // Ottieni l'elemento DOM nativo
+
+        fullscreenBtn.click(function() {
+            if (!document.fullscreenElement) {
+                // Entra in modalità schermo intero
+                if (conceptMap.requestFullscreen) {
+                    conceptMap.requestFullscreen();
+                } else if (conceptMap.webkitRequestFullscreen) { /* Safari */
+                    conceptMap.webkitRequestFullscreen();
+                } else if (conceptMap.msRequestFullscreen) { /* IE11 */
+                    conceptMap.msRequestFullscreen();
                 }
-                
-                isFullscreen = true;
-                $(this).html('<i class="bi bi-fullscreen-exit"></i> Esci');
             } else {
-                // Ripristina la posizione originale
-                const originalParent = conceptMap.data('original-parent');
-                const originalIndex = conceptMap.data('original-index');
-                conceptMap.appendTo(originalParent);
-                
-                // Rimuovi il contenitore a schermo intero
-                $('.fullscreen-map').remove();
-                
-                // Aggiorna il layout della rete
+                // Esci dalla modalità schermo intero
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* Safari */
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { /* IE11 */
+                    document.msExitFullscreen();
+                }
+            }
+        });
+
+        // Gestisci i cambiamenti dello stato fullscreen
+        document.onfullscreenchange = function() {
+            isFullscreen = !!document.fullscreenElement;
+            if (isFullscreen) {
+                fullscreenBtn.html('<i class="bi bi-fullscreen-exit"></i> Esci');
+                // Aggiorna il layout della rete quando si entra in fullscreen
                 if (network) {
                     setTimeout(() => {
                         network.fit();
                         network.redraw();
                     }, 100);
                 }
-                
-                isFullscreen = false;
-                $(this).html('<i class="bi bi-arrows-fullscreen"></i> Schermo intero');
+            } else {
+                fullscreenBtn.html('<i class="bi bi-arrows-fullscreen"></i> Schermo intero');
+                 // Aggiorna il layout della rete quando si esce dal fullscreen
+                 if (network) {
+                    setTimeout(() => {
+                        network.fit();
+                        network.redraw();
+                    }, 100);
+                }
             }
-        });
+        };
 
-        // Gestisci l'uscita dalla modalità a schermo intero con il tasto ESC
-        $(document).keyup(function(e) {
-            if (e.key === "Escape" && isFullscreen) {
-                $('#fullscreenBtn').click();
-            }
-        });
-
-        // Gestisci il ridimensionamento della finestra
+        // Gestisci il ridimensionamento della finestra (utile anche in fullscreen)
         $(window).resize(function() {
-            if (isFullscreen && network) {
+            if (network) {
                 setTimeout(() => {
                     network.fit();
                     network.redraw();
@@ -174,12 +171,12 @@ $(document).ready(function() {
                                  direction.startsWith('DU') ? 'DU' : 
                                  direction.startsWith('LR') ? 'LR' : 'RL',
                         sortMethod: 'directed',
-                        levelSeparation: 150,
-                        nodeSpacing: 200,
-                        treeSpacing: 200,
+                        levelSeparation: 100,
+                        nodeSpacing: 150,
+                        treeSpacing: 150,
                         blockShifting: true,
                         edgeMinimization: true,
-                        parentCentralization: true
+                        parentCentralization: false
                         // L'opzione 'alignment' non è supportata nella versione attuale di vis.js
                     }
                 }
@@ -309,8 +306,8 @@ $(document).ready(function() {
             },
             edges: {
                 smooth: {
-                    type: 'cubicBezier',
-                    forceDirection: direction.startsWith('UD') || direction.startsWith('DU') ? 'horizontal' : 'vertical'
+                    type: 'dynamic',
+                    roundness: 0.6
                 }
             },
             layout: {
@@ -319,24 +316,26 @@ $(document).ready(function() {
                              direction.startsWith('DU') ? 'DU' : 
                              direction.startsWith('LR') ? 'LR' : 'RL',
                     sortMethod: 'directed',
-                    levelSeparation: 150,
-                    nodeSpacing: 200,
-                    treeSpacing: 200,
+                    levelSeparation: 250,
+                    nodeSpacing: 300,
+                    treeSpacing: 300,
                     blockShifting: true,
                     edgeMinimization: true,
-                    parentCentralization: true,
-                    //alignment: direction.includes('CENTER') ? 'center' : null
-                    parentCentralization: true
+                    parentCentralization: false
                 }
             },
             physics: {
-                enabled: true,
+                enabled: false,
+                stabilization: {
+                    enabled: true,
+                    iterations: 500,
+                    updateInterval: 50
+                },
                 hierarchicalRepulsion: {
-                    centralGravity: 0.0,
-                    springLength: 100,
-                    springConstant: 0.01,
-                    nodeDistance: 120,
-                    damping: 0.09
+                    nodeDistance: 300,
+                    centralGravity: 0.1,
+                    springLength: 300,
+                    springConstant: 0.01
                 },
                 solver: 'hierarchicalRepulsion'
             },
@@ -361,12 +360,12 @@ $(document).ready(function() {
                 options.layout.hierarchical = {
                     direction: direction === 'UD_CENTER' ? 'UD' : 'LR',
                     sortMethod: 'directed',
-                    levelSeparation: 150,
-                    nodeSpacing: 200,
-                    treeSpacing: 200,
-                    blockShifting: true,
-                    edgeMinimization: true,
-                    parentCentralization: true
+                    levelSeparation: 300,
+                    nodeSpacing: 350,
+                    treeSpacing: 250,
+                    blockShifting: false,
+                    edgeMinimization: false,
+                    parentCentralization: false
                     // L'opzione 'alignment' non è supportata nella versione attuale di vis.js
                 };
 
@@ -396,5 +395,19 @@ $(document).ready(function() {
             network.destroy();
         }
         network = new vis.Network(container, data, options);
+
+        // Dopo la stabilizzazione, disabilita la fisica e blocca il layout
+        network.once('stabilized', function() {
+            network.setOptions({
+                layout: {
+                    hierarchical: {
+                        enabled: false
+                    }
+                },
+                physics: {
+                    enabled: false
+                }
+            });
+        });
+            });
     });
-});
