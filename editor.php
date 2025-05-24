@@ -63,8 +63,8 @@ $folders = $stmt->fetchAll();
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
             <a class="navbar-brand" href="index.php">Nodix</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -73,66 +73,89 @@ $folders = $stmt->fetchAll();
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="dashboard.php">Dashboard</a>
+                        <a class="nav-link" href="dashboard.php"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="logout.php">Logout</a>
+                        <a class="nav-link" href="logout.php"><i class="bi bi-box-arrow-right me-1"></i> Logout</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <div class="container py-4">
         <div class="row">
-            <div class="col-md-6">
-                <div class="card">
+            <div class="col-md-6 mb-4 mb-md-0">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-bottom-0 pt-4">
+                        <h4 class="mb-0"><i class="bi bi-pencil-square me-2 text-primary"></i><?php echo $text ? 'Modifica' : 'Nuovo'; ?> Testo</h4>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title"><?php echo $text ? 'Modifica' : 'Nuovo'; ?> Testo</h5>
                         <form method="POST" id="textForm">
                             <div class="mb-3">
                                 <label for="title" class="form-label">Titolo</label>
-                                <input type="text" class="form-control" id="title" name="title" value="<?php echo $text ? htmlspecialchars($text['title']) : ''; ?>" required>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-type-h1"></i></span>
+                                    <input type="text" class="form-control" id="title" name="title" value="<?php echo $text ? htmlspecialchars($text['title']) : ''; ?>" required>
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="folder_id" class="form-label">Cartella</label>
-                                <select class="form-select" id="folder_id" name="folder_id">
-                                    <option value="">Nessuna cartella</option>
-                                    <?php foreach ($folders as $folder): ?>
-                                        <option value="<?php echo $folder['id']; ?>" <?php echo ($text && $text['folder_id'] == $folder['id']) ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($folder['name']); ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-folder"></i></span>
+                                    <select class="form-select" id="folder_id" name="folder_id">
+                                        <option value="">Nessuna cartella</option>
+                                        <?php foreach ($folders as $folder): ?>
+                                            <option value="<?php echo $folder['id']; ?>" <?php echo ($text && $text['folder_id'] == $folder['id']) ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($folder['name']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label for="content" class="form-label">Contenuto</label>
-                                <textarea class="form-control" id="content" name="content" rows="15" required><?php echo $text ? htmlspecialchars($text['content']) : ''; ?></textarea>
-                                <small class="text-muted">Usa il tab per creare sottolivelli nell'elenco puntato</small>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-list-ul"></i></span>
+                                    <textarea class="form-control" id="content" name="content" rows="15" required><?php echo $text ? htmlspecialchars($text['content']) : ''; ?></textarea>
+                                </div>
+                                <small class="text-muted mt-1"><i class="bi bi-info-circle me-1"></i>Usa il tab per creare sottolivelli nell'elenco puntato</small>
                             </div>
                             <div class="d-flex justify-content-between">
-                                <button type="button" class="btn btn-primary" id="generateMap">Genera Mappa</button>
-                                <button type="submit" class="btn btn-success">Salva</button>
+                                <button type="button" class="btn btn-primary" id="generateMap"><i class="bi bi-diagram-3 me-2"></i>Genera Mappa</button>
+                                <button type="submit" class="btn btn-success"><i class="bi bi-save me-2"></i>Salva</button>
                             </div>
                         </form>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-bottom-0 pt-4 d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="bi bi-diagram-3 me-2 text-primary"></i>Mappa Concettuale</h4>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="optionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-gear"></i> Opzioni
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="optionsDropdown">
+                                <li>
+                                    <h6 class="dropdown-header">Direzione</h6>
+                                </li>
+                                <li><a class="dropdown-item" href="#" data-direction="UD">Dall'alto al basso</a></li>
+                                <li><a class="dropdown-item" href="#" data-direction="DU">Dal basso all'alto</a></li>
+                                <li><a class="dropdown-item" href="#" data-direction="LR">Da sinistra a destra</a></li>
+                                <li><a class="dropdown-item" href="#" data-direction="RL">Da destra a sinistra</a></li>
+                                <li><a class="dropdown-item" href="#" data-direction="UD_CENTER">Centro → Verticale</a></li>
+                                <li><a class="dropdown-item" href="#" data-direction="LR_CENTER">Centro → Orizzontale</a></li>
+                            </ul>
+                        </div>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Mappa Concettuale</h5>
-                        <div class="d-flex justify-content-end mb-2">
-                            <select class="form-select form-select-sm me-2" id="directionSelect" style="width: auto;">
-                                <option value="UD">Dall'alto al basso</option>
-                                <option value="DU">Dal basso all'alto</option>
-                                <option value="LR">Da sinistra a destra</option>
-                                <option value="RL">Da destra a sinistra</option>
-                                <option value="UD_CENTER">Centro → Verticale</option>
-                                <option value="LR_CENTER">Centro → Orizzontale</option>
-                            </select>
-                            <button class="btn btn-sm btn-outline-secondary me-2" id="zoomIn">+</button>
-                            <button class="btn btn-sm btn-outline-secondary me-2" id="zoomOut">-</button>
+                        <div class="d-flex justify-content-end mb-3">
+                            <div class="btn-group me-2">
+                                <button class="btn btn-sm btn-outline-secondary" id="zoomIn"><i class="bi bi-zoom-in"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary" id="zoomOut"><i class="bi bi-zoom-out"></i></button>
+                            </div>
                             <button class="btn btn-sm btn-outline-primary me-2" id="fullscreenBtn">
                                 <i class="bi bi-arrows-fullscreen"></i> Schermo intero
                             </button>
@@ -146,7 +169,7 @@ $folders = $stmt->fetchAll();
                                 </ul>
                             </div>
                         </div>
-                        <div id="mapContainer" style="height: 600px;"></div>
+                        <div id="mapContainer" class="border rounded" style="height: 600px;"></div>
                     </div>
                 </div>
             </div>

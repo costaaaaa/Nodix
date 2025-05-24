@@ -1,38 +1,174 @@
 :root {
-    --primary-color: #2c3e50;
-    --secondary-color: #34495e;
-    --accent-color: #7f8c8d;
-    --light-gray: #ecf0f1;
-    --dark-gray: #2c3e50;
+    /* Professional color palette */
+    --primary-color: #2c3e50; /* Deep blue-gray for primary elements */
+    --secondary-color: #34495e; /* Darker blue-gray for secondary elements */
+    --accent-color: #3498db; /* Bright blue for accents and highlights */
+    --accent-secondary: #1abc9c; /* Teal for secondary accents */
+    --text-color: #2c3e50; /* Dark blue-gray for text */
+    --text-light: #7f8c8d; /* Light gray for secondary text */
+    --background-light: #ecf0f1; /* Light gray background */
+    --background-white: #ffffff; /* White background */
+    --success-color: #27ae60; /* Green for success messages */
+    --danger-color: #e74c3c; /* Red for error messages */
+    --warning-color: #f39c12; /* Orange for warnings */
+    --light-color: #f8f9fa; /* Very light gray */
+    --dark-color: #2c3e50; /* Same as primary for consistency */
 }
 
 body {
-    background-color: var(--light-gray);
-    color: var(--dark-gray);
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-light);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.6;
 }
 
 .navbar {
-    background-color: var(--primary-color) !important;
+    background-color: var(--background-white);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    color: var(--primary-color) !important;
+    letter-spacing: 0.5px;
+}
+
+.nav-link {
+    color: var(--text-color) !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--accent-color) !important;
+}
+
+.btn {
+    border-radius: 4px;
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.3s ease;
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
 }
 
 .btn-primary:hover {
+    background-color: #2980b9; /* Slightly darker accent color */
+    border-color: #2980b9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.btn-secondary {
     background-color: var(--secondary-color);
     border-color: var(--secondary-color);
+}
+
+.btn-secondary:hover {
+    background-color: #2c3c4c; /* Slightly darker secondary color */
+    border-color: #2c3c4c;
 }
 
 .btn-outline-secondary {
     color: var(--primary-color);
     border-color: var(--primary-color);
+    transition: all 0.3s ease;
 }
 
 .btn-outline-secondary:hover {
     background-color: var(--primary-color);
     color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Stili per la hero section */
+.hero-section {
+    padding: 80px 0;
+    background: linear-gradient(135deg, var(--light-gray) 0%, #e6f2ff 100%);
+}
+
+.hero-section h1 {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+/* Stili per le feature cards */
+.features {
+    background-color: var(--white);
+}
+
+.feature-card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    height: 100%;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    color: var(--primary-color);
+}
+
+.feature-card h3 {
+    color: var(--dark-gray);
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+/* Stili per la sezione CTA */
+.cta-section {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 60px 0;
+}
+
+.cta-section h2 {
+    font-weight: 700;
+}
+
+.cta-section .btn-primary {
+    background-color: var(--white);
+    color: var(--primary-color);
+    border-color: var(--white);
+}
+
+.cta-section .btn-primary:hover {
+    background-color: var(--light-gray);
+    color: var(--primary-color);
+    border-color: var(--light-gray);
+}
+
+.cta-section .btn-outline-secondary {
+    color: var(--white);
+    border-color: var(--white);
+}
+
+.cta-section .btn-outline-secondary:hover {
+    background-color: var(--white);
+    color: var(--primary-color);
+}
+
+/* Stili per il footer */
+.footer {
+    background-color: var(--dark-gray);
+    color: var(--light-gray);
+    padding: 30px 0;
 }
 
 /* Stili per l'editor di testo */
@@ -54,6 +190,7 @@ body {
 
 #mapContainer {
     height: 500px; /* Aggiungi un'altezza predefinita */
+    width: 100%;
 }
 
 /* Stili per le cartelle */

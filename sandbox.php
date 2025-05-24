@@ -17,8 +17,8 @@ session_start();
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
             <a class="navbar-brand" href="index.php">Nodix</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -27,63 +27,89 @@ session_start();
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="sandbox.php">Sandbox</a>
+                        <a class="nav-link active" href="sandbox.php"><!--<i class="bi bi-box"></i>--> Sandbox</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="login.php">Login</a>
+                        <a class="nav-link" href="login.php"> <!--<i class="bi bi-box-arrow-in-right"></i>--> Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="register.php">Registrati</a>
+                        <a class="nav-link" href="register.php"><!--<i class="bi bi-person-plus"></i>--> Registrati</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col">
-                <div class="text-editor">
-                    <h3>Editor di testo</h3>
-                    <p class="text-muted">Inserisci il tuo testo con elenchi puntati. Usa il tab per creare sottolivelli.</p>
-                    <textarea id="textInput" class="form-control" rows="15" placeholder="• Elemento principale&#10;    • Sottoelemento&#10;        • Sottosottoelemento"></textarea>
-                    <button id="generateMap" class="btn btn-primary mt-3">Genera Mappa</button>
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col-12 text-center mb-4">
+                <h2 class="fw-bold">Sandbox Nodix</h2>
+                <p class="lead text-muted">Prova subito a creare la tua mappa concettuale</p>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col mb-4 mb-lg-0">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-bottom-0 pt-4">
+                        <h4 class="mb-0"><i class="bi bi-pencil-square me-2 text-primary"></i>Editor di testo</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">Inserisci il tuo testo con elenchi puntati. Usa il tab per creare sottolivelli.</p>
+                        <textarea id="textInput" class="form-control border" rows="15" placeholder="• Elemento principale&#10;    • Sottoelemento&#10;        • Sottosottoelemento"></textarea>
+                        <button id="generateMap" class="btn btn-primary mt-4 w-100">
+                            <i class="bi bi-diagram-3 me-2"></i>Genera Mappa
+                        </button>
+                    </div>
                 </div>
             </div>
-
         </div>
-        <div class="row">
+
+
+        <div class="row mb-5">
             <div class="col">
-                <div class="concept-map">
-                    <h3>Mappa Concettuale</h3>
-                    <div class="d-flex justify-content-end mb-2">
-                        <select class="form-select form-select-sm me-2" id="directionSelect" style="width: auto;">
-                            <option value="UD">Dall'alto al basso</option>
-                            <option value="DU">Dal basso all'alto</option>
-                            <option value="LR">Da sinistra a destra</option>
-                            <option value="RL">Da destra a sinistra</option>
-                            <option value="UD_CENTER">Centro → Verticale</option>
-                            <option value="LR_CENTER">Centro → Orizzontale</option>
-                        </select>
-                        <button class="btn btn-sm btn-outline-secondary me-2" id="zoomIn">+</button>
-                        <button class="btn btn-sm btn-outline-secondary me-2" id="zoomOut">-</button>
-
-                        <br />
-
-                        <button class="btn btn-sm btn-outline-primary me-2" id="fullscreenBtn">
-                            <i class="bi bi-arrows-fullscreen"></i> Schermo intero
-                        </button>
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-bottom-0 pt-4 d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="bi bi-diagram-3 me-2 text-primary"></i>Mappa Concettuale</h4>
                         <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-download"></i> Esporta
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="optionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-gear"></i> Opzioni
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
-                                <li><a class="dropdown-item" href="#" id="exportPNG"><i class="bi bi-file-image"></i> Esporta come PNG</a></li>
-                                <li><a class="dropdown-item" href="#" id="exportPDF"><i class="bi bi-file-pdf"></i> Esporta come PDF</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="optionsDropdown">
+                                <li>
+                                    <h6 class="dropdown-header">Direzione</h6>
+                                </li>
+                                <li><a class="dropdown-item" href="#" data-direction="UD">Dall'alto al basso</a></li>
+                                <li><a class="dropdown-item" href="#" data-direction="DU">Dal basso all'alto</a></li>
+                                <li><a class="dropdown-item" href="#" data-direction="LR">Da sinistra a destra</a></li>
+                                <li><a class="dropdown-item" href="#" data-direction="RL">Da destra a sinistra</a></li>
+                                <li><a class="dropdown-item" href="#" data-direction="UD_CENTER">Centro → Verticale</a></li>
+                                <li><a class="dropdown-item" href="#" data-direction="LR_CENTER">Centro → Orizzontale</a></li>
                             </ul>
                         </div>
                     </div>
-                    <div id="mapContainer"></div>
+                    <div class="card-body concept-map">
+                        <div class="d-flex justify-content-end mb-3">
+                            <div class="btn-group me-2">
+                                <button class="btn btn-sm btn-outline-secondary" id="zoomIn"><i class="bi bi-zoom-in"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary" id="zoomOut"><i class="bi bi-zoom-out"></i></button>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary me-2" id="fullscreenBtn">
+                                <i class="bi bi-arrows-fullscreen"></i> Schermo intero
+                            </button>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-download"></i> Esporta
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+                                    <li><a class="dropdown-item" href="#" id="exportPNG"><i class="bi bi-file-image"></i> Esporta come PNG</a></li>
+                                    <li><a class="dropdown-item" href="#" id="exportPDF"><i class="bi bi-file-pdf"></i> Esporta come PDF</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <br />
+                        <div id="mapContainer" class="border rounded"></div>
+                    </div>
                 </div>
             </div>
         </div>

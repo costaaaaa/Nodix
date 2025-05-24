@@ -1,6 +1,7 @@
 $(document).ready(function () {
   let network = null;
   const container = document.getElementById("mapContainer");
+  let originalContainerStyles = { height: '', width: '' };
   let isFullscreen = false;
 
   // Funzione per gestire lo zoom
@@ -24,102 +25,170 @@ $(document).ready(function () {
     });
   }
 
-  // Funzione per gestire la modalità a schermo intero
+  // Funzione per gestire la modalità a schermo intero - CORRETTA
   function setupFullscreen() {
     const fullscreenBtn = $("#fullscreenBtn");
-    const conceptMap = $(".concept-map")[0]; // Ottieni l'elemento DOM nativo
+    const conceptMapElement = $(".concept-map");
+
+    // Verifica esistenza degli elementi
+    if (!fullscreenBtn.length || !conceptMapElement.length) {
+      console.warn("Fullscreen button or .concept-map element not found.");
+      return;
+    }
+
+    const conceptMapDOMElement = conceptMapElement[0];
+
+    // Verifica che 'container' (#mapContainer) esista
+    if (!container) {
+      console.error("#mapContainer not found. Fullscreen will not work correctly.");
+      return;
+    }
 
     fullscreenBtn.click(function () {
-      if (!document.fullscreenElement) {
+      // Verifica dello stato fullscreen
+      const isCurrentlyFullscreen = !!(
+        document.fullscreenElement || 
+        document.webkitFullscreenElement || 
+        document.mozFullScreenElement || 
+        document.msFullscreenElement
+      );
+
+      if (!isCurrentlyFullscreen) {
+        // Salva gli stili originali di #mapContainer
+        originalContainerStyles.height = $(container).css('height');
+        originalContainerStyles.width = $(container).css('width');
+
         // Entra in modalità schermo intero
-        if (conceptMap.requestFullscreen) {
-          conceptMap.requestFullscreen();
-        } else if (conceptMap.webkitRequestFullscreen) {
-          /* Safari */
-          conceptMap.webkitRequestFullscreen();
-        } else if (conceptMap.msRequestFullscreen) {
-          /* IE11 */
-          conceptMap.msRequestFullscreen();
-        }
+        enterFullscreen(conceptMapDOMElement);
       } else {
         // Esci dalla modalità schermo intero
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          /* Safari */
-          document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-          /* IE11 */
-          document.msExitFullscreen();
-        }
+        exitFullscreen();
       }
     });
 
     // Gestisci i cambiamenti dello stato fullscreen
-    document.onfullscreenchange = function () {
-      isFullscreen = !!document.fullscreenElement;
-      if (isFullscreen) {
-        fullscreenBtn.html('<i class="bi bi-fullscreen-exit"></i> Esci');
-        // Imposta l'altezza del container al 100% in modalità fullscreen
-        $(container).css('height', '100%');
-        // Aggiorna il layout della rete quando si entra in fullscreen
-        if (network) {
-          // Attendiamo che il DOM si aggiorni completamente
-          setTimeout(() => {
-            // Forza un ridimensionamento completo
-            network.setSize('100%', '100%');
-            // Adatta la vista a tutti i nodi
-            network.fit({
-              animation: {
-                duration: 500,
-                easingFunction: 'easeInOutQuad'
-              }
-            });
-            network.redraw();
-          }, 300);
-        }
-      } else {
-        fullscreenBtn.html(
-          '<i class="bi bi-arrows-fullscreen"></i> Schermo intero'
-        );
-        // Ripristina l'altezza originale del container (500px) quando si esce dal fullscreen
-        $(container).css('height', '500px');
-        // Aggiorna il layout della rete quando si esce dal fullscreen
-        if (network) {
-          setTimeout(() => {
-            // Forza un ridimensionamento completo
-            network.setSize('100%', '100%');
-            // Adatta la vista a tutti i nodi
-            network.fit({
-              animation: {
-                duration: 500,
-                easingFunction: 'easeInOutQuad'
-              }
-            });
-            network.redraw();
-          }, 300);
-        }
-      }
-    };
+    const fullscreenEvents = 'fullscreenchange webkitfullscreenchange mozfullscreenchange MSFullscreenChange';
+    $(document).off(fullscreenEvents).on(fullscreenEvents, function () {
+      const newFullscreenState = !!(
+        document.fullscreenElement || 
+        document.webkitFullscreenElement || 
+        document.mozFullScreenElement || 
+        document.msFullscreenElement
+      );
+      
+      handleFullscreenChange(newFullscreenState, fullscreenBtn);
+    });
 
-    // Gestisci il ridimensionamento della finestra (utile anche in fullscreen)
-        $(window).resize(function() {
-            if (network) {
-                // Usa un timeout più lungo per assicurarsi che il DOM sia completamente aggiornato
-                setTimeout(() => {
-                    // Forza un ridimensionamento completo
-                    network.setSize('100%', '100%');
-                    // Adatta la vista a tutti i nodi
-                    network.fit({
-                        animation: {
-                            duration: 300,
-                            easingFunction: 'easeInOutQuad'
-                        }
-                    });
-                    network.redraw();
-                }, 300);
-            }
+    // Gestisci il ridimensionamento della finestra
+    $(window).off('resize.fullscreen').on('resize.fullscreen', function() {
+      if (network) {
+        setTimeout(() => {
+          network.setSize('100%', '100%');
+          network.fit({
+            animation: { duration: 100, easingFunction: 'easeInOutQuad' }
+          });
+          network.redraw();
+        }, 150);
+      }
+    });
+  }
+
+  // Funzione per entrare in fullscreen
+  function enterFullscreen(element) {
+    try {
+      let fsPromise;
+      
+      if (element.requestFullscreen) {
+        fsPromise = element.requestFullscreen();
+      } else if (element.webkitRequestFullscreen) {
+        fsPromise = element.webkitRequestFullscreen();
+      } else if (element.mozRequestFullScreen) {
+        fsPromise = element.mozRequestFullScreen();
+      } else if (element.msRequestFullscreen) {
+        fsPromise = element.msRequestFullscreen();
+      } else {
+        console.error("Fullscreen API not supported by this browser");
+        return;
+      }
+
+      // Gestione della Promise se disponibile
+      if (fsPromise && typeof fsPromise.catch === 'function') {
+        fsPromise.catch(err => {
+          console.error("Errore durante la richiesta di entrare in schermo intero:", err.message);
+          // Se fallisce, ripristina gli stili originali di #mapContainer
+          $(container).css({
+            'height': originalContainerStyles.height,
+            'width': originalContainerStyles.width
+          });
         });
+      }
+    } catch (error) {
+      console.error("Errore nell'attivazione fullscreen:", error);
+    }
+  }
+
+  // Funzione per uscire dal fullscreen
+  function exitFullscreen() {
+    try {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(err => 
+          console.error("Errore durante l'uscita da schermo intero:", err.message)
+        );
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    } catch (error) {
+      console.error("Errore nell'uscita da fullscreen:", error);
+    }
+  }
+
+  // Funzione per gestire i cambiamenti dello stato fullscreen
+  function handleFullscreenChange(newFullscreenState, fullscreenBtn) {
+    isFullscreen = newFullscreenState;
+
+    if (isFullscreen) {
+      fullscreenBtn.html('<i class="bi bi-fullscreen-exit"></i> Esci');
+      
+      // Imposta l'altezza del container al 100% in modalità fullscreen
+      $(container).css({
+        'height': '100%',
+        'width': '100%'
+      });
+
+      // Aggiorna il layout della rete quando si entra in fullscreen
+      updateNetworkLayout();
+    } else {
+      fullscreenBtn.html('<i class="bi bi-arrows-fullscreen"></i> Schermo intero');
+      
+      // Ripristina l'altezza e larghezza originali di #mapContainer
+      $(container).css({
+        'height': originalContainerStyles.height || '500px',
+        'width': originalContainerStyles.width || '100%'
+      });
+      
+      // Resetta gli stili salvati
+      originalContainerStyles = { height: '', width: '' };
+
+      // Aggiorna il layout della rete quando si esce dal fullscreen
+      updateNetworkLayout();
+    }
+  }
+
+  // Funzione helper per aggiornare il layout della rete
+  function updateNetworkLayout() {
+    if (network) {
+      setTimeout(() => {
+        network.setSize('100%', '100%');
+        network.fit({ 
+          animation: { duration: 100, easingFunction: 'easeInOutQuad' } 
+        });
+        network.redraw();
+      }, 150);
+    }
   }
 
   // Funzione per esportare la mappa come PNG
@@ -200,18 +269,24 @@ $(document).ready(function () {
     });
   }
 
-  // Funzione per aggiornare la direzione della mappa
-  function updateDirection() {
+  // Funzione per aggiornare la direzione della mappa - CORRETTA
+  function updateDirection(directionParam) {
     if (network) {
-      const direction = $("#directionSelect").val();
+      // Assicurati che directionParam sia una stringa valida prima di procedere
+      if (typeof directionParam !== 'string' || directionParam.trim() === '') {
+        console.warn("updateDirection chiamata con direzione non valida o vuota:", directionParam);
+        return;
+      }
+
       let options = {
         layout: {
           hierarchical: {
-            direction: direction.startsWith("UD")
+            // CORREZIONE: usa directionParam invece di direction
+            direction: directionParam.startsWith("UD")
               ? "UD"
-              : direction.startsWith("DU")
+              : directionParam.startsWith("DU")
               ? "DU"
-              : direction.startsWith("LR")
+              : directionParam.startsWith("LR")
               ? "LR"
               : "RL",
             sortMethod: "directed",
@@ -221,7 +296,6 @@ $(document).ready(function () {
             blockShifting: true,
             edgeMinimization: true,
             parentCentralization: false,
-            // L'opzione 'alignment' non è supportata nella versione attuale di vis.js
           },
         },
       };
@@ -234,7 +308,20 @@ $(document).ready(function () {
   setupFullscreen();
   setupExportPNG();
   setupExportPDF();
-  $("#directionSelect").change(updateDirection);
+  
+  // Gestione delle direzioni tramite i link nel dropdown
+  $(document).on('click', '[data-direction]', function(e) {
+    e.preventDefault();
+    const direction = $(this).data('direction');
+    updateDirection(direction);
+  });
+  
+  // Supporto per il vecchio select (per retrocompatibilità)
+  if ($("#directionSelect").length) {
+    $("#directionSelect").change(function() {
+      updateDirection($(this).val());
+    });
+  }
 
   // Aggiungiamo un campo per il titolo della mappa
   if (!$("#mapTitleInput").length) {
@@ -256,7 +343,7 @@ $(document).ready(function () {
     let nodeId = 1;
     let parentStack = [null];
     let levelNodes = {};
-
+    
     // Crea il nodo titolo come nodo principale
     nodes.push({
       id: nodeId,
@@ -342,7 +429,13 @@ $(document).ready(function () {
       edges: new vis.DataSet(edges),
     };
 
-    const direction = $("#directionSelect").val();
+    // Determina la direzione per la nuova mappa.
+    // Usa "UD" come default se #directionSelect non esiste o non ha un valore valido.
+    let layoutDirection = "UD"; // Default direction
+    if ($("#directionSelect").length && typeof $("#directionSelect").val() === 'string' && $("#directionSelect").val().trim() !== '') {
+        layoutDirection = $("#directionSelect").val();
+    }
+
     const options = {
       nodes: {
         shape: "box",
@@ -359,11 +452,11 @@ $(document).ready(function () {
       },
       layout: {
         hierarchical: {
-          direction: direction.startsWith("UD")
+          direction: layoutDirection.startsWith("UD")
             ? "UD"
-            : direction.startsWith("DU")
+            : layoutDirection.startsWith("DU")
             ? "DU"
-            : direction.startsWith("LR")
+            : layoutDirection.startsWith("LR")
             ? "LR"
             : "RL",
           sortMethod: "directed",
@@ -391,16 +484,16 @@ $(document).ready(function () {
         solver: "hierarchicalRepulsion",
       },
       interaction: {
-                dragNodes: true, // Abilita il trascinamento dei nodi
-                zoomView: false, // Disabilita lo zoom con la rotella del mouse
-                dragView: true,
-                navigationButtons: true, // Aggiunge pulsanti di navigazione
-                keyboard: true // Abilita la navigazione da tastiera
-            }
+        dragNodes: true, // Abilita il trascinamento dei nodi
+        zoomView: false, // Disabilita lo zoom con la rotella del mouse
+        dragView: true,
+        navigationButtons: true, // Aggiunge pulsanti di navigazione
+        keyboard: true // Abilita la navigazione da tastiera
+      }
     };
 
     // Se è selezionata una modalità centrata, modifica il layout
-    if (direction.includes("CENTER")) {
+    if (layoutDirection.includes("CENTER")) {
       // Trova il nodo radice (id: 1)
       const rootNode = nodes.find((n) => n.id === 1);
       if (rootNode) {
@@ -411,7 +504,7 @@ $(document).ready(function () {
 
         // Modifica il layout per i nodi figli
         options.layout.hierarchical = {
-          direction: direction === "UD_CENTER" ? "UD" : "LR",
+          direction: layoutDirection === "UD_CENTER" ? "UD" : "LR",
           sortMethod: "directed",
           levelSeparation: 300,
           nodeSpacing: 350,
@@ -419,7 +512,6 @@ $(document).ready(function () {
           blockShifting: false,
           edgeMinimization: false,
           parentCentralization: false,
-          // L'opzione 'alignment' non è supportata nella versione attuale di vis.js
         };
 
         // Aggiungi una funzione di callback per posizionare i nodi
@@ -437,7 +529,7 @@ $(document).ready(function () {
           const parentNode = nodes.find((n) => n.id === parent);
           if (!parentNode) return null;
 
-          const isVertical = direction === "UD_CENTER";
+          const isVertical = layoutDirection === "UD_CENTER";
           const offset = level * 200;
 
           return {
