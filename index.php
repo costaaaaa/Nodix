@@ -106,7 +106,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-12 text-center">
-                    <p class="mb-0">© 2023 Nodix - Tutti i diritti riservati</p>
+                    <p class="mb-0">© 2025 Nodix - Tutti i diritti riservati</p>
                 </div>
             </div>
         </div>

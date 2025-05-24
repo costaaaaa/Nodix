@@ -49,4 +49,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (contentEditor) {
         setupTextEditor('content');
     }
+
+    // Inizializza anche per dashboard.php
+    const dashboardTextContent = document.getElementById('text_content');
+    if (dashboardTextContent) {
+        setupTextEditor('text_content');
+    }
 });

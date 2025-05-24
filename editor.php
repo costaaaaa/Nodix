@@ -23,7 +23,7 @@ if (isset($_GET['id'])) {
 
 // Gestione del salvataggio
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = trim($_POST['title']);
+    $title = trim($_POST['mapTitleInput']);
     $content = $_POST['content'];
     $folder_id = $_POST['folder_id'] ?? null;
 
@@ -85,7 +85,7 @@ $folders = $stmt->fetchAll();
 
     <div class="container py-4">
         <div class="row">
-            <div class="col-md-6 mb-4 mb-md-0">
+            <div class="col mb-4 mb-md-0">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header bg-white border-bottom-0 pt-4">
                         <h4 class="mb-0"><i class="bi bi-pencil-square me-2 text-primary"></i><?php echo $text ? 'Modifica' : 'Nuovo'; ?> Testo</h4>
@@ -93,10 +93,10 @@ $folders = $stmt->fetchAll();
                     <div class="card-body">
                         <form method="POST" id="textForm">
                             <div class="mb-3">
-                                <label for="title" class="form-label">Titolo</label>
+                                <label for="mapTitleInput" class="form-label">Titolo</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-type-h1"></i></span>
-                                    <input type="text" class="form-control" id="title" name="title" value="<?php echo $text ? htmlspecialchars($text['title']) : ''; ?>" required>
+                                    <input type="text" class="form-control" id="mapTitleInput" name="mapTitleInput" value="<?php echo $text ? htmlspecialchars($text['title']) : ''; ?>" required>
                                 </div>
                             </div>
                             <div class="mb-3">
@@ -129,7 +129,11 @@ $folders = $stmt->fetchAll();
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+        </div>
+        <br />
+        <div class="row">
+
+            <div class="col">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header bg-white border-bottom-0 pt-4 d-flex justify-content-between align-items-center">
                         <h4 class="mb-0"><i class="bi bi-diagram-3 me-2 text-primary"></i>Mappa Concettuale</h4>
