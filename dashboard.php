@@ -8,8 +8,49 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Gestione delle cartelle
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Gestione delle richieste AJAX per eliminazione
+if (isset($_GET['action']) && $_GET['action'] === 'delete_text' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+
+    // Verifica che sia stata fornita l'ID del testo
+    if (!isset($_POST['text_id']) || !is_numeric($_POST['text_id'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'ID testo non valido']);
+        exit();
+    }
+
+    $text_id = (int)$_POST['text_id'];
+    $user_id = $_SESSION['user_id'];
+
+    try {
+        // Verifica che il testo appartenga all'utente corrente
+        $stmt = $conn->prepare("SELECT id FROM texts WHERE id = ? AND user_id = ?");
+        $stmt->execute([$text_id, $user_id]);
+
+        if (!$stmt->fetch()) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Testo non trovato o non autorizzato']);
+            exit();
+        }
+
+        // Elimina il testo
+        $stmt = $conn->prepare("DELETE FROM texts WHERE id = ? AND user_id = ?");
+        $stmt->execute([$text_id, $user_id]);
+
+        if ($stmt->rowCount() > 0) {
+            echo json_encode(['success' => true, 'message' => 'Testo eliminato con successo']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Errore durante l\'eliminazione']);
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Errore del database']);
+    }
+    exit();
+}
+
+// Gestione delle cartelle e testi
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_GET['action'])) {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'create_folder':
@@ -60,6 +101,21 @@ $texts = $stmt->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .folder.active {
+            background-color: #e7f3ff !important;
+            border-color: #007bff !important;
+            color: #007bff !important;
+        }
+
+        .folder.active i {
+            color: #007bff !important;
+        }
+
+        .text-item-hidden {
+            display: none !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -100,6 +156,9 @@ $texts = $stmt->fetchAll();
                             </div>
                         </form>
                         <div class="list-group list-group-flush">
+                            <a href="#" class="list-group-item list-group-item-action folder border-0 ps-0" onclick="showAllTexts()">
+                                <i class="bi bi-collection me-2 text-primary"></i>Tutti i testi
+                            </a>
                             <?php foreach ($folders as $folder): ?>
                                 <a href="#" class="list-group-item list-group-item-action folder border-0 ps-0" data-folder-id="<?php echo $folder['id']; ?>">
                                     <i class="bi bi-folder2 me-2 text-primary"></i><?php echo htmlspecialchars($folder['name']); ?>
@@ -122,7 +181,7 @@ $texts = $stmt->fetchAll();
                     <div class="card-body">
                         <div class="list-group">
                             <?php foreach ($texts as $text): ?>
-                                <div class="list-group-item border mb-3 rounded shadow-sm">
+                                <div class="list-group-item border mb-3 rounded shadow-sm" data-folder-id="<?php echo $text['folder_id'] ?? ''; ?>">
                                     <div class="d-flex w-100 justify-content-between align-items-center mb-2">
                                         <h5 class="mb-0 fw-bold"><?php echo htmlspecialchars($text['title']); ?></h5>
                                         <?php if ($text['folder_name']): ?>
@@ -203,8 +262,69 @@ $texts = $stmt->fetchAll();
     <script>
         function deleteText(textId) {
             if (confirm('Sei sicuro di voler eliminare questo testo?')) {
-                // Implementare la logica di eliminazione
+                // Mostra un indicatore di caricamento
+                const button = event.target.closest('button');
+                const originalContent = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Eliminando...';
+                button.disabled = true;
+
+                $.ajax({
+                    url: 'dashboard.php?action=delete_text',
+                    type: 'POST',
+                    data: {
+                        text_id: textId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            // Rimuovi l'elemento dalla pagina con animazione
+                            $(`button[onclick="deleteText(${textId})"]`)
+                                .closest('.list-group-item')
+                                .fadeOut(300, function() {
+                                    $(this).remove();
+                                });
+
+                            // Mostra messaggio di successo
+                            showAlert('success', response.message);
+                        } else {
+                            // Ripristina il pulsante e mostra errore
+                            button.innerHTML = originalContent;
+                            button.disabled = false;
+                            showAlert('danger', response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        // Ripristina il pulsante e mostra errore
+                        button.innerHTML = originalContent;
+                        button.disabled = false;
+
+                        let errorMessage = 'Errore durante l\'eliminazione del testo';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        showAlert('danger', errorMessage);
+                    }
+                });
             }
+        }
+
+        // Funzione per mostrare alert Bootstrap
+        function showAlert(type, message) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            // Inserisce l'alert all'inizio del container
+            $('.container.py-4').prepend(alertHtml);
+
+            // Rimuove automaticamente l'alert dopo 5 secondi
+            setTimeout(function() {
+                $('.alert').fadeOut();
+            }, 5000);
         }
 
         // Gestione della selezione delle cartelle
@@ -212,8 +332,85 @@ $texts = $stmt->fetchAll();
             e.preventDefault();
             $('.folder').removeClass('active');
             $(this).addClass('active');
-            // Implementare il filtraggio dei testi per cartella
+
+            const folderId = $(this).data('folder-id');
+            filterTextsByFolder(folderId);
         });
+
+        // Funzione per filtrare i testi per cartella
+        function filterTextsByFolder(folderId) {
+            // Seleziona solo gli elementi testo nell'area principale, non le cartelle nella sidebar
+            const textItems = $('.col-md-9 .list-group .list-group-item');
+
+            if (!folderId) {
+                // Se nessuna cartella è selezionata, mostra tutti i testi
+                textItems.show();
+                //updateTextCount(textItems.length);
+                return;
+            }
+
+            let visibleCount = 0;
+
+            textItems.each(function() {
+                const textFolderId = $(this).data('folder-id');
+
+                if (textFolderId == folderId) {
+                    $(this).show();
+                    visibleCount++;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            //updateTextCount(visibleCount);
+
+            // Se non ci sono testi nella cartella selezionata
+            if (visibleCount === 0) {
+                showEmptyFolderMessage();
+            } else {
+                hideEmptyFolderMessage();
+            }
+        }
+
+        // Funzione per aggiornare il conteggio dei testi visibili
+        function updateTextCount(count) {
+            const header = $('.card-header h4');
+            const originalText = header.html().split(' (')[0]; // Rimuove il conteggio precedente se presente
+
+            if (count > 0) {
+                header.html(`${originalText} (${count} testo${count !== 1 ? 'i' : ''})`);
+            } else {
+                header.html(originalText);
+            }
+        }
+
+        // Funzione per mostrare il messaggio di cartella vuota
+        function showEmptyFolderMessage() {
+            hideEmptyFolderMessage(); // Rimuove il messaggio precedente se esiste
+
+            const emptyMessage = `
+                <div class="alert alert-info text-center" id="emptyFolderMessage">
+                    <i class="bi bi-folder2-open me-2"></i>
+                    Questa cartella non contiene ancora nessun testo.
+                    <br>
+                    <small class="text-muted">Crea un nuovo testo e assegnalo a questa cartella.</small>
+                </div>
+            `;
+
+            $('.list-group').prepend(emptyMessage);
+        }
+
+        // Funzione per nascondere il messaggio di cartella vuota
+        function hideEmptyFolderMessage() {
+            $('#emptyFolderMessage').remove();
+        }
+
+        // Pulsante per mostrare tutti i testi
+        function showAllTexts() {
+            $('.folder').removeClass('active');
+            filterTextsByFolder(null);
+            hideEmptyFolderMessage();
+        }
     </script>
 </body>
 
