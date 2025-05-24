@@ -83,7 +83,7 @@ session_start();
                             </ul>
                         </div>
                     </div>
-                    <div id="mapContainer" style="height: 500px;"></div>
+                    <div id="mapContainer"></div>
                 </div>
             </div>
         </div>
