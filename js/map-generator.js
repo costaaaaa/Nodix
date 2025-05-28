@@ -8,6 +8,25 @@ $(document).ready(function () {
   // Questi dati dovrebbero essere la "fonte di verità" pulita, senza x,y,physics impostati dal layout.
   let currentMapData = { nodes: [], edges: [] };
 
+  // Variabile per la distanza tra i nodi (default 150)
+  let nodeDistance = 150;
+
+  // Aggiorna il valore visualizzato e la mappa
+  function setNodeDistance(val) {
+    nodeDistance = Math.max(50, Math.min(400, parseInt(val, 10) || 150));
+    $('#nodeDistanceValue').val(nodeDistance);
+    if (currentMapData.nodes.length > 0) {
+      const activeDirectionElement = $('[data-direction].active');
+      let selectedDirection = "UD";
+      if (activeDirectionElement.length > 0) {
+        selectedDirection = activeDirectionElement.data('direction');
+      } else if ($("#directionSelect").length && typeof $("#directionSelect").val() === 'string' && $("#directionSelect").val().trim() !== '') {
+        selectedDirection = $("#directionSelect").val();
+      }
+      updateDirection(selectedDirection);
+    }
+  }
+
   // Funzione per gestire lo zoom
   function setupZoom() {
     $("#zoomIn").click(function () {
@@ -188,7 +207,7 @@ $(document).ready(function () {
 
   // La funzione createCenteredVerticalLayout MODIFICA i nodi passati (aggiunge x,y,physics:false).
   // Questo è il motivo per cui dobbiamo passare una COPIA PROFONDA.
-  function createCenteredVerticalLayout(nodes, edges) {
+  function createCenteredVerticalLayout(nodes, edges, nodeDistance) {
     // Creiamo una copia profonda dei nodi per essere sicuri di non modificare l'originale
     const layoutNodes = JSON.parse(JSON.stringify(nodes));
     const layoutEdges = JSON.parse(JSON.stringify(edges));
@@ -197,8 +216,8 @@ $(document).ready(function () {
     const level2Nodes = layoutNodes.filter(node => node.level === 2);
 
     const centerY = 0;
-    const verticalSpacingLevel2 = 200;
-    const horizontalSpacingLevel2 = 250;
+    const verticalSpacingLevel2 = nodeDistance + 50;
+    const horizontalSpacingLevel2 = nodeDistance + 100;
 
     if (titleNode) {
       titleNode.x = 0;
@@ -214,20 +233,20 @@ $(document).ready(function () {
       node.x = (index - (topNodes.length - 1) / 2) * horizontalSpacingLevel2;
       node.y = centerY - verticalSpacingLevel2;
       node.physics = false; // Disabilita la fisica
-      positionChildrenVertically(node, layoutNodes, layoutEdges, -1);
+      positionChildrenVertically(node, layoutNodes, layoutEdges, -1, nodeDistance);
     });
 
     bottomNodes.forEach((node, index) => {
       node.x = (index - (bottomNodes.length - 1) / 2) * horizontalSpacingLevel2;
       node.y = centerY + verticalSpacingLevel2;
       node.physics = false; // Disabilita la fisica
-      positionChildrenVertically(node, layoutNodes, layoutEdges, 1);
+      positionChildrenVertically(node, layoutNodes, layoutEdges, 1, nodeDistance);
     });
 
     return { nodes: layoutNodes, edges: layoutEdges };
   }
 
-  function positionChildrenVertically(parentNode, allNodes, edges, directionSign) {
+  function positionChildrenVertically(parentNode, allNodes, edges, directionSign, nodeDistance) {
     const children = edges
       .filter(edge => edge.from === parentNode.id)
       .map(edge => allNodes.find(node => node.id === edge.to))
@@ -235,19 +254,19 @@ $(document).ready(function () {
 
     if (children.length === 0) return;
 
-    const childVerticalOffset = 150;
-    const childHorizontalSpacing = 180;
+    const childVerticalOffset = nodeDistance;
+    const childHorizontalSpacing = nodeDistance;
 
     children.forEach((child, index) => {
       child.x = parentNode.x + (index - (children.length - 1) / 2) * childHorizontalSpacing;
       child.y = parentNode.y + (directionSign * childVerticalOffset);
       child.physics = false; // Disabilita la fisica
-      positionChildrenVertically(child, allNodes, edges, directionSign);
+      positionChildrenVertically(child, allNodes, edges, directionSign, nodeDistance);
     });
   }
 
   // NUOVA FUNZIONE: Layout orizzontale centrato
-  function createCenteredHorizontalLayout(nodes, edges) {
+  function createCenteredHorizontalLayout(nodes, edges, nodeDistance) {
     const layoutNodes = JSON.parse(JSON.stringify(nodes));
     const layoutEdges = JSON.parse(JSON.stringify(edges));
 
@@ -255,8 +274,8 @@ $(document).ready(function () {
     const level2Nodes = layoutNodes.filter(node => node.level === 2);
 
     const centerX = 0;
-    const horizontalSpacingLevel2 = 200; // Spaziatura orizzontale per nodi di livello 2
-    const verticalSpacingLevel2 = 100;   // Spaziatura verticale per nodi di livello 2 (li disperde un po')
+    const horizontalSpacingLevel2 = nodeDistance + 50;
+    const verticalSpacingLevel2 = nodeDistance / 2;
 
     if (titleNode) {
       titleNode.x = centerX;
@@ -272,20 +291,20 @@ $(document).ready(function () {
       node.x = centerX - horizontalSpacingLevel2; // A sinistra del centro
       node.y = (index - (leftNodes.length - 1) / 2) * verticalSpacingLevel2;
       node.physics = false;
-      positionChildrenHorizontally(node, layoutNodes, layoutEdges, -1); // Espansione a sinistra
+      positionChildrenHorizontally(node, layoutNodes, layoutEdges, -1, nodeDistance); // Espansione a sinistra
     });
 
     rightNodes.forEach((node, index) => {
       node.x = centerX + horizontalSpacingLevel2; // A destra del centro
       node.y = (index - (rightNodes.length - 1) / 2) * verticalSpacingLevel2;
       node.physics = false;
-      positionChildrenHorizontally(node, layoutNodes, layoutEdges, 1); // Espansione a destra
+      positionChildrenHorizontally(node, layoutNodes, layoutEdges, 1, nodeDistance); // Espansione a destra
     });
 
     return { nodes: layoutNodes, edges: layoutEdges };
   }
 
-  function positionChildrenHorizontally(parentNode, allNodes, edges, directionSign) {
+  function positionChildrenHorizontally(parentNode, allNodes, edges, directionSign, nodeDistance) {
     const children = edges
       .filter(edge => edge.from === parentNode.id)
       .map(edge => allNodes.find(node => node.id === edge.to))
@@ -293,14 +312,14 @@ $(document).ready(function () {
 
     if (children.length === 0) return;
 
-    const childHorizontalOffset = 150; // Offset orizzontale per i figli
-    const childVerticalSpacing = 100;    // Spaziatura verticale tra i figli
+    const childHorizontalOffset = nodeDistance;
+    const childVerticalSpacing = nodeDistance / 2;
 
     children.forEach((child, index) => {
       child.x = parentNode.x + (directionSign * childHorizontalOffset);
       child.y = parentNode.y + (index - (children.length - 1) / 2) * childVerticalSpacing;
       child.physics = false;
-      positionChildrenHorizontally(child, allNodes, edges, directionSign);
+      positionChildrenHorizontally(child, allNodes, edges, directionSign, nodeDistance);
     });
   }
   
@@ -331,6 +350,27 @@ $(document).ready(function () {
     network.on("zoom", function(params) { if (isFullscreen) network.redraw(); });
   }
 
+  // Gestione pulsanti + e - per la distanza tra i nodi
+  $(document).on('click', '#nodeDistanceMinus', function() {
+    setNodeDistance(nodeDistance - 10);
+  });
+  $(document).on('click', '#nodeDistancePlus', function() {
+    setNodeDistance(nodeDistance + 10);
+  });
+
+  // Gestione input manuale
+  $(document).on('change input', '#nodeDistanceValue', function() {
+    setNodeDistance($(this).val());
+  });
+
+  // Modifica getNodeDistance per usare la variabile
+  function getNodeDistance() {
+    return nodeDistance;
+  }
+
+  // All'avvio, imposta il valore iniziale
+  $('#nodeDistanceValue').val(nodeDistance);
+
   function updateDirection(directionParam) {
     if (!currentMapData.nodes.length) {
       console.warn("Impossibile aggiornare la direzione: dati della mappa non disponibili.");
@@ -338,7 +378,8 @@ $(document).ready(function () {
     }
 
     let nodesToUse;
-    let edgesToUse = JSON.parse(JSON.stringify(currentMapData.edges)); // Sempre una copia profonda degli edges
+    let edgesToUse = JSON.parse(JSON.stringify(currentMapData.edges));
+    const nodeDistance = getNodeDistance();
 
     let visOptions = {
       nodes: { shape: "box", margin: 10, font: { size: 14 } },
@@ -347,46 +388,28 @@ $(document).ready(function () {
     };
 
     if (directionParam === "UD_CENTER") {
-      // Per UD_CENTER, prepariamo i nodi con x, y e physics:false
-      const centeredData = createCenteredVerticalLayout(currentMapData.nodes, currentMapData.edges);
+      const centeredData = createCenteredVerticalLayout(currentMapData.nodes, currentMapData.edges, nodeDistance);
       nodesToUse = centeredData.nodes;
-      
-      console.log("UD_CENTER: Nodi preparati per Vis.js (con x,y,physics:false):", nodesToUse); // DEBUG
-      
       visOptions.layout = { hierarchical: false }; // Disabilita il layout gerarchico
       visOptions.physics = { enabled: false }; // Disabilita la fisica per tutti i nodi
-
     } else if (directionParam === "LR_CENTER") {
-      // Per LR_CENTER, prepariamo i nodi con x, y e physics:false per il layout orizzontale centrato
-      const centeredData = createCenteredHorizontalLayout(currentMapData.nodes, currentMapData.edges);
+      const centeredData = createCenteredHorizontalLayout(currentMapData.nodes, currentMapData.edges, nodeDistance);
       nodesToUse = centeredData.nodes;
-
-      console.log("LR_CENTER: Nodi preparati per Vis.js (con x,y,physics:false):", nodesToUse); // DEBUG
-
       visOptions.layout = { hierarchical: false }; // Disabilita il layout gerarchico
       visOptions.physics = { enabled: false }; // Disabilita la fisica per tutti i nodi
-
-    } else { // Gestione per layout gerarchici standard (UD, DU, LR, RL)
-      // Per i layout gerarchici, puliamo i nodi da x, y e physics
+    } else {
       nodesToUse = currentMapData.nodes.map(node => {
         const cleanedNode = {};
         for (const key in node) {
-            // Copia tutte le proprietà tranne x, y, physics
-            if (key !== 'x' && key !== 'y' && key !== 'physics') {
-                cleanedNode[key] = node[key];
-            }
+          if (key !== 'x' && key !== 'y' && key !== 'physics') {
+            cleanedNode[key] = node[key];
+          }
         }
-        
-        // Assicurati che 'level' sia definito.
         if (typeof cleanedNode.level === 'undefined' || cleanedNode.level === null) {
-            console.error("ERRORE RILEVATO (updateDirection - Hierarchical): Nodo con ID", cleanedNode.id, "manca della proprietà 'level'! Assegnazione a 1 per fallback. NODO:", cleanedNode);
-            cleanedNode.level = 1;
+          cleanedNode.level = 1;
         }
         return cleanedNode;
       });
-
-      console.log("Hierarchical Layout: Nodi preparati per Vis.js (puliti, con level):", nodesToUse); // DEBUG
-      
       visOptions.layout = {
         hierarchical: {
           enabled: true, // ABILITA il layout gerarchico
@@ -394,9 +417,9 @@ $(document).ready(function () {
                      directionParam.startsWith("DU") ? "DU" :
                      directionParam.startsWith("LR") ? "LR" : "RL",
           sortMethod: "directed",
-          levelSeparation: 150,
-          nodeSpacing: 200,
-          treeSpacing: 200,
+          levelSeparation: nodeDistance,
+          nodeSpacing: nodeDistance + 50,
+          treeSpacing: nodeDistance + 50,
           blockShifting: true,
           edgeMinimization: true,
           parentCentralization: true,
@@ -411,7 +434,6 @@ $(document).ready(function () {
         }
       };
     }
-    
     // Inizializza o ricrea il network con i nuovi dati e opzioni
     initializeNetwork(nodesToUse, edgesToUse, visOptions, directionParam);
   }
@@ -562,8 +584,10 @@ $(document).ready(function () {
       interaction: { dragNodes: true, zoomView: false, dragView: true, navigationButtons: true, keyboard: true },
     };
 
+    const nodeDistance = getNodeDistance();
+
     if (selectedDirection === "UD_CENTER") {
-      const centeredData = createCenteredVerticalLayout(currentMapData.nodes, currentMapData.edges);
+      const centeredData = createCenteredVerticalLayout(currentMapData.nodes, currentMapData.edges, nodeDistance);
       nodesToUseForInitialGeneration = centeredData.nodes;
       
       console.log("Generate Map - UD_CENTER: Nodi preparati per Vis.js (con x,y,physics:false):", nodesToUseForInitialGeneration); // DEBUG
@@ -572,7 +596,7 @@ $(document).ready(function () {
       visOptionsForInitialGeneration.physics = { enabled: false };
 
     } else if (selectedDirection === "LR_CENTER") {
-        const centeredData = createCenteredHorizontalLayout(currentMapData.nodes, currentMapData.edges);
+        const centeredData = createCenteredHorizontalLayout(currentMapData.nodes, currentMapData.edges, nodeDistance);
         nodesToUseForInitialGeneration = centeredData.nodes;
 
         console.log("Generate Map - LR_CENTER: Nodi preparati per Vis.js (con x,y,physics:false):", nodesToUseForInitialGeneration); // DEBUG

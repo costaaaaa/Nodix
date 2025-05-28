@@ -73,7 +73,7 @@ session_start();
                         <h4 class="mb-0"><i class="bi bi-diagram-3 me-2 text-primary"></i>Mappa Concettuale</h4>
                         <div class="dropdown">
                             <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="optionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-gear"></i> Opzioni
+                                <i class="bi bi-gear"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="optionsDropdown">
                                 <li>
@@ -89,17 +89,31 @@ session_start();
                         </div>
                     </div>
                     <div class="card-body concept-map">
+
                         <div class="d-flex justify-content-end mb-3">
-                            <div class="btn-group me-2">
-                                <button class="btn btn-sm btn-outline-secondary" id="zoomIn"><i class="bi bi-zoom-in"></i></button>
-                                <button class="btn btn-sm btn-outline-secondary" id="zoomOut"><i class="bi bi-zoom-out"></i></button>
+                            <div class="btn-group me-2" id="nodeDistanceControl">
+                                <button class="btn btn-sm btn-outline-secondary" id="nodeDistanceMinus" title="Diminuisci distanza">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <input type="number" min="50" max="400" step="10" id="nodeDistanceValue" class="form-control form-control-sm text-center px-1" value="150" style="width:70px; max-width:70px; height:38px; line-height:1.2; font-size:1.1em; appearance: textfield;">
+                                <button class="btn btn-sm btn-outline-secondary" id="nodeDistancePlus" title="Aumenta distanza">
+                                    <i class="bi bi-plus"></i>
+                                </button>
                             </div>
-                            <button class="btn btn-sm btn-outline-primary me-2" id="fullscreenBtn">
-                                <i class="bi bi-arrows-fullscreen"></i> Schermo intero
+                            <div class="btn-group me-2">
+                                <button class="btn btn-sm btn-outline-secondary" id="zoomIn" title="Zoom in">
+                                    <i class="bi bi-zoom-in"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="zoomOut" title="Zoom out">
+                                    <i class="bi bi-zoom-out"></i>
+                                </button>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary me-2" id="fullscreenBtn" title="Fullscreen">
+                                <i class="bi bi-arrows-fullscreen"></i>
                             </button>
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-download"></i> Esporta
+                                    <i class="bi bi-download"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
                                     <li><a class="dropdown-item" href="#" id="exportPNG"><i class="bi bi-file-image"></i> Esporta come PNG</a></li>
@@ -107,8 +121,7 @@ session_start();
                                 </ul>
                             </div>
                         </div>
-                        <br />
-                        <div id="mapContainer" class="border rounded"></div>
+                        <div class="mb-3" id="mapContainer" class="border rounded"></div>
                     </div>
                 </div>
             </div>
