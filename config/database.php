@@ -12,4 +12,8 @@ try {
     echo "Errore di connessione: " . $e->getMessage();
     die();
 }
+
+function insert_logo() {
+    echo '<link rel="icon" href="./media/nodix_logo.ico" type="image/x-icon">';
+}
 ?>

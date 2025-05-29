@@ -61,6 +61,10 @@ $folders = $stmt->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.css" rel="text/plain">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <?php
+    include_once './config/database.php';
+    insert_logo();
+    ?>
 </head>
 
 <body>
