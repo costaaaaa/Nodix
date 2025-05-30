@@ -24,7 +24,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete_text' && $_SERVER['REQ
 
     try {
         // Verifica che il testo appartenga all'utente corrente
-        $stmt = $conn->prepare("SELECT id FROM texts WHERE id = ? AND user_id = ?");
+        $stmt = $conn->prepare("SELECT id FROM NODIX_texts WHERE id = ? AND user_id = ?");
         $stmt->execute([$text_id, $user_id]);
 
         if (!$stmt->fetch()) {
@@ -34,7 +34,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete_text' && $_SERVER['REQ
         }
 
         // Elimina il testo
-        $stmt = $conn->prepare("DELETE FROM texts WHERE id = ? AND user_id = ?");
+        $stmt = $conn->prepare("DELETE FROM NODIX_texts WHERE id = ? AND user_id = ?");
         $stmt->execute([$text_id, $user_id]);
 
         if ($stmt->rowCount() > 0) {
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_GET['action'])) {
             case 'create_folder':
                 $folder_name = trim($_POST['folder_name']);
                 if (!empty($folder_name)) {
-                    $stmt = $conn->prepare("INSERT INTO folders (user_id, name) VALUES (?, ?)");
+                    $stmt = $conn->prepare("INSERT INTO NODIX_folders (user_id, name) VALUES (?, ?)");
                     $stmt->execute([$_SESSION['user_id'], $folder_name]);
                 }
                 break;
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_GET['action'])) {
                 $title = trim($_POST['title']);
 
                 if (!empty($text_content) && !empty($title)) {
-                    $stmt = $conn->prepare("INSERT INTO texts (user_id, folder_id, title, content) VALUES (?, ?, ?, ?)");
+                    $stmt = $conn->prepare("INSERT INTO NODIX_texts (user_id, folder_id, title, content) VALUES (?, ?, ?, ?)");
                     $stmt->execute([$_SESSION['user_id'], $folder_id, $title, $text_content]);
                 }
                 break;
@@ -76,15 +76,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_GET['action'])) {
 }
 
 // Recupera le cartelle dell'utente
-$stmt = $conn->prepare("SELECT * FROM folders WHERE user_id = ? ORDER BY name");
+$stmt = $conn->prepare("SELECT * FROM NODIX_folders WHERE user_id = ? ORDER BY name");
 $stmt->execute([$_SESSION['user_id']]);
 $folders = $stmt->fetchAll();
 
 // Recupera i testi dell'utente
 $stmt = $conn->prepare("
     SELECT t.*, f.name as folder_name 
-    FROM texts t 
-    LEFT JOIN folders f ON t.folder_id = f.id 
+    FROM NODIX_texts t 
+    LEFT JOIN NODIX_folders f ON t.folder_id = f.id 
     WHERE t.user_id = ? 
     ORDER BY t.created_at DESC
 ");

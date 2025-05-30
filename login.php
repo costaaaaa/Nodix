@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($username) || empty($password)) {
         $error = "Tutti i campi sono obbligatori";
     } else {
-        $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ?");
+        $stmt = $conn->prepare("SELECT id, username, password FROM NODIX_users WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
 

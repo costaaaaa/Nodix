@@ -31,7 +31,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 2.  **Set up the database:**
     *   Create a new database in your MySQL/MariaDB server. You can name it `nodix` or choose another name.
-    *   Import the `database.sql` file into your newly created database. This will create the necessary tables (`users`, `folders`, `texts`).
+    *   Import the `database.sql` file into your newly created database. This will create the necessary tables (`NODIX_users`, `NODIX_folders`, `NODIX_texts`).
         ```bash
         mysql -u your_username -p your_database_name < database.sql
         ```

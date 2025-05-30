@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 // Recupera il testo se viene specificato un ID
 $text = null;
 if (isset($_GET['id'])) {
-    $stmt = $conn->prepare("SELECT * FROM texts WHERE id = ? AND user_id = ?");
+    $stmt = $conn->prepare("SELECT * FROM NODIX_texts WHERE id = ? AND user_id = ?");
     $stmt->execute([$_GET['id'], $_SESSION['user_id']]);
     $text = $stmt->fetch();
 
@@ -30,11 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($title) && !empty($content)) {
         if (isset($_GET['id'])) {
             // Aggiorna il testo esistente
-            $stmt = $conn->prepare("UPDATE texts SET title = ?, content = ?, folder_id = ? WHERE id = ? AND user_id = ?");
+            $stmt = $conn->prepare("UPDATE NODIX_texts SET title = ?, content = ?, folder_id = ? WHERE id = ? AND user_id = ?");
             $stmt->execute([$title, $content, $folder_id, $_GET['id'], $_SESSION['user_id']]);
         } else {
             // Crea un nuovo testo
-            $stmt = $conn->prepare("INSERT INTO texts (user_id, title, content, folder_id) VALUES (?, ?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO NODIX_texts (user_id, title, content, folder_id) VALUES (?, ?, ?, ?)");
             $stmt->execute([$_SESSION['user_id'], $title, $content, $folder_id]);
         }
         header("Location: dashboard.php");
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Recupera le cartelle dell'utente
-$stmt = $conn->prepare("SELECT * FROM folders WHERE user_id = ? ORDER BY name");
+$stmt = $conn->prepare("SELECT * FROM NODIX_folders WHERE user_id = ? ORDER BY name");
 $stmt->execute([$_SESSION['user_id']]);
 $folders = $stmt->fetchAll();
 ?>

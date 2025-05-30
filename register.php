@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Le password non coincidono";
     } else {
         // Verifica se l'username o l'email esistono già
-        $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+        $stmt = $conn->prepare("SELECT id FROM NODIX_users WHERE username = ? OR email = ?");
         $stmt->execute([$username, $email]);
 
         if ($stmt->rowCount() > 0) {
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Inserisci il nuovo utente
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO NODIX_users (username, email, password) VALUES (?, ?, ?)");
 
             if ($stmt->execute([$username, $email, $hashed_password])) {
                 $success = "Registrazione completata con successo! Ora puoi effettuare il login.";
