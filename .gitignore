@@ -1,4 +1,6 @@
 docker-compose.yml
 Dockerfile
 .DS_Store
-.DS_Store
+media/.DS_Store
+media/nodix_logo.png
+media/nodix_logo.ico
