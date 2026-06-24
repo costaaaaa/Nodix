@@ -27,8 +27,12 @@ CREATE TABLE IF NOT EXISTS NODIX_texts (
     folder_id INT,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
+    map_state TEXT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES NODIX_users(id) ON DELETE CASCADE,
     FOREIGN KEY (folder_id) REFERENCES NODIX_folders(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
+
+-- Migrazione per installazioni esistenti:
+-- ALTER TABLE NODIX_texts ADD COLUMN map_state TEXT NULL;

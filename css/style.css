@@ -189,8 +189,54 @@ body {
 }
 
 #mapContainer {
-    height: 500px; /* Aggiungi un'altezza predefinita */
+    height: 500px;
     width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+#mapContainer svg.markmap-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Stile dei nodi markmap */
+.markmap-node circle {
+    cursor: pointer;
+    stroke-width: 1.5px;
+}
+
+.markmap-node text,
+.markmap-node foreignObject div {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    cursor: default;
+    user-select: none;
+}
+
+.markmap-link {
+    fill: none;
+    stroke-width: 1.5px;
+}
+
+/* Separatori verticali nella toolbar */
+.toolbar-sep {
+    display: inline-block;
+    width: 1px;
+    background: #dee2e6;
+    height: 28px;
+    margin: 0 4px;
+    vertical-align: middle;
+}
+
+/* Valore expand level: aspetto coerente con btn-group */
+#expandLevelDisplay {
+    font-size: 0.8rem;
+    min-width: 36px;
+    text-align: center;
+    line-height: 1;
+    pointer-events: none;
 }
 
 /* Stili per le cartelle */

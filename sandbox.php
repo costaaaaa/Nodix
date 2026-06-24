@@ -11,8 +11,8 @@ session_start();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.css" rel="style">
+    <script src="js/d3.min.js"></script>
+    <script src="js/markmap-view.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <?php
@@ -60,8 +60,11 @@ session_start();
                     </div>
                     <div class="card-body">
                         <p class="text-muted mb-3">Inserisci il tuo testo con elenchi puntati. Usa il tab per creare sottolivelli.</p>
-                        <textarea id="textInput" class="form-control border" rows="15" placeholder="• Elemento principale&#10;    • Sottoelemento&#10;        • Sottosottoelemento"></textarea>
-                        <button id="generateMap" class="btn btn-primary mt-4 w-100">
+                        <div class="mb-3">
+                            <input type="text" id="mapTitleInput" class="form-control" placeholder="Titolo della mappa (opzionale)">
+                        </div>
+                        <textarea id="textInput" class="form-control border" rows="14" placeholder="• Elemento principale&#10;    • Sottoelemento&#10;        • Sottosottoelemento"></textarea>
+                        <button id="generateMap" class="btn btn-primary mt-3 w-100">
                             <i class="bi bi-diagram-3 me-2"></i>Genera Mappa
                         </button>
                     </div>
@@ -73,59 +76,54 @@ session_start();
         <div class="row mb-5">
             <div class="col">
                 <div class="card shadow-sm border-0 h-100">
-                    <div class="card-header bg-white border-bottom-0 pt-4 d-flex justify-content-between align-items-center">
+                    <div class="card-header bg-white border-bottom-0 pt-4">
                         <h4 class="mb-0"><i class="bi bi-diagram-3 me-2 text-primary"></i>Mappa Concettuale</h4>
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="optionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-gear"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="optionsDropdown">
-                                <li>
-                                    <h6 class="dropdown-header">Direzione</h6>
-                                </li>
-                                <li><a class="dropdown-item" href="#" data-direction="UD">Dall'alto al basso</a></li>
-                                <li><a class="dropdown-item" href="#" data-direction="DU">Dal basso all'alto</a></li>
-                                <li><a class="dropdown-item" href="#" data-direction="LR">Da sinistra a destra</a></li>
-                                <li><a class="dropdown-item" href="#" data-direction="RL">Da destra a sinistra</a></li>
-                                <li><a class="dropdown-item" href="#" data-direction="UD_CENTER">Centro → Verticale</a></li>
-                                <li><a class="dropdown-item" href="#" data-direction="LR_CENTER">Centro → Orizzontale</a></li>
-                            </ul>
-                        </div>
                     </div>
                     <div class="card-body concept-map">
 
-                        <div class="d-flex justify-content-end mb-3">
-                            <div class="btn-group me-2" id="nodeDistanceControl">
-                                <button class="btn btn-sm btn-outline-secondary" id="nodeDistanceMinus" title="Diminuisci distanza">
-                                    <i class="bi bi-dash"></i>
-                                </button>
-                                <input type="number" min="50" max="400" step="10" id="nodeDistanceValue" class="form-control form-control-sm text-center px-1" value="150" style="width:70px; max-width:70px; height:38px; line-height:1.2; font-size:1.1em; appearance: textfield;">
-                                <button class="btn btn-sm btn-outline-secondary" id="nodeDistancePlus" title="Aumenta distanza">
-                                    <i class="bi bi-plus"></i>
-                                </button>
+                        <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-3">
+                            <!-- Livello espansione -->
+                            <div class="btn-group" id="expandLevelControl" title="Livello espansione iniziale">
+                                <button class="btn btn-sm btn-outline-secondary" id="expandLevelMinus" title="Comprimi un livello"><i class="bi bi-dash"></i></button>
+                                <span class="btn btn-sm btn-outline-secondary disabled" id="expandLevelDisplay" style="min-width:36px;pointer-events:none">2</span>
+                                <button class="btn btn-sm btn-outline-secondary" id="expandLevelPlus" title="Espandi un livello"><i class="bi bi-plus"></i></button>
                             </div>
-                            <div class="btn-group me-2">
-                                <button class="btn btn-sm btn-outline-secondary" id="zoomIn" title="Zoom in">
-                                    <i class="bi bi-zoom-in"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary" id="zoomOut" title="Zoom out">
-                                    <i class="bi bi-zoom-out"></i>
-                                </button>
+                            <button class="btn btn-sm btn-outline-secondary" id="expandAllBtn" title="Espandi tutto"><i class="bi bi-node-plus"></i></button>
+                            <button class="btn btn-sm btn-outline-secondary" id="collapseAllBtn" title="Comprimi tutto"><i class="bi bi-node-minus"></i></button>
+
+                            <div class="toolbar-sep"></div>
+
+                            <!-- Distanza nodi -->
+                            <div class="btn-group" id="nodeDistanceControl" title="Spaziatura nodi">
+                                <button class="btn btn-sm btn-outline-secondary" id="nodeDistanceMinus" title="Diminuisci spaziatura"><i class="bi bi-dash"></i></button>
+                                <input type="number" min="20" max="400" step="10" id="nodeDistanceValue" class="form-control form-control-sm text-center px-1" value="80" style="width:60px;height:31px;appearance:textfield">
+                                <button class="btn btn-sm btn-outline-secondary" id="nodeDistancePlus" title="Aumenta spaziatura"><i class="bi bi-plus"></i></button>
                             </div>
-                            <button class="btn btn-sm btn-outline-primary me-2" id="fullscreenBtn" title="Fullscreen">
-                                <i class="bi bi-arrows-fullscreen"></i>
-                            </button>
+
+                            <div class="toolbar-sep"></div>
+
+                            <!-- Zoom + Fit -->
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-secondary" id="zoomOut" title="Zoom out"><i class="bi bi-zoom-out"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary" id="fitMapBtn" title="Adatta alla finestra"><i class="bi bi-aspect-ratio"></i></button>
+                                <button class="btn btn-sm btn-outline-secondary" id="zoomIn" title="Zoom in"><i class="bi bi-zoom-in"></i></button>
+                            </div>
+
+                            <!-- Fullscreen -->
+                            <button class="btn btn-sm btn-outline-primary" id="fullscreenBtn" title="Schermo intero"><i class="bi bi-arrows-fullscreen"></i></button>
+
+                            <!-- Export -->
                             <div class="dropdown">
                                 <button class="btn btn-sm btn-outline-success dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bi bi-download"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
-                                    <li><a class="dropdown-item" href="#" id="exportPNG"><i class="bi bi-file-image"></i> Esporta come PNG</a></li>
-                                    <li><a class="dropdown-item" href="#" id="exportPDF"><i class="bi bi-file-pdf"></i> Esporta come PDF</a></li>
+                                    <li><a class="dropdown-item" href="#" id="exportPNG"><i class="bi bi-file-image me-1"></i>Esporta PNG</a></li>
+                                    <li><a class="dropdown-item" href="#" id="exportPDF"><i class="bi bi-file-pdf me-1"></i>Esporta PDF</a></li>
                                 </ul>
                             </div>
                         </div>
-                        <div class="mb-3" id="mapContainer" class="border rounded"></div>
+                        <div id="mapContainer"></div>
                     </div>
                 </div>
             </div>
